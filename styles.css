@@ -1,0 +1,250 @@
+/* Reset and base styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;  /* Ensure full height for the page */
+    font-family: Arial, sans-serif;
+  }
+  
+  #container {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh; /* Allow growing */
+  }
+  
+  
+  /* Header and Nav bar*/
+
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #333333;
+    color: white;
+    padding: 0.1em;
+  }
+
+  nav .nav-bar {
+    display: flex;
+    justify-content: center; /* center horizontally */
+    gap: 2em; /* space between links */
+    list-style: none;
+    padding: 0;
+    margin-top: 1em;
+  }
+  
+  nav .nav-bar li a {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    padding: 0.5em 1em;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  nav .nav-bar li a:hover {
+    background-color: #555;
+  }
+
+  
+  /* Main layout: Sidebar + Main Content */
+  .main-area {
+    display: grid;
+    grid-template-columns: 1fr 4fr; /* Sidebar:Main = 1:4 */
+    min-height: 0; /* prevents stretching */
+   
+  }
+
+  .OR{
+    text-align: center;
+  }
+
+  
+  
+  /* Sidebar */
+  /* Sidebar styling */
+aside {
+  background-color: #f9f9f9;  
+  border: 1px solid #ddd;     
+  border-radius: 8px;         
+  padding: 1.5em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+  text-align: center;
+}
+
+aside h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #0077cc;
+  padding-bottom: 0.5em;
+  margin-bottom: 1em;
+}
+
+aside > * + * {
+  margin-top: 1em;  /* adds space between all child elements */
+}
+
+/* Quick links list */
+.quick-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quick-links li {
+  margin-bottom: 0.5em;
+}
+
+.quick-links a {
+  text-decoration: none;
+  color: #0077cc;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.quick-links a:hover {
+  color: #005fa3;
+}
+
+/* Sidebar image */
+aside img {
+  width: 100%;
+  max-width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+  
+  /* Main Content */
+  main {
+    padding: 2em;
+  }
+  
+  img {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    width: 150px;
+  }
+  
+
+  form label {
+    display: block;
+    margin-top: 1em;
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    box-sizing: border-box;
+  }
+  
+  button {
+    margin-top: 1em;
+    padding: 10px 20px;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #005fa3;
+  }
+
+/*search results*/
+
+
+/* Results grid layout */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* responsive columns */
+  gap: 1.5em;
+  margin-top: 1em;
+}
+
+/* Individual result card */
+.card {
+  background-color: #fefefe;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card h4 {
+  margin-top: 0;
+  color: #0077cc;
+}
+
+.card p {
+  margin: 0.5em 0;
+  line-height: 1.4;
+}
+
+/* Strong labels inside cards */
+.card strong {
+  color: #333;
+}
+
+
+  .no-driver {
+    color: red;
+    font-weight: bold;
+  }
+
+
+  .card.selected {
+    border: 2px solid #0077cc;
+    background-color: #e6f2ff;
+  }
+  
+
+
+/*footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 0.1em;
+    text-align: center;
+   
+  }
+
+  
+
+  @media (max-width: 500px) {
+    /* Stack nav links vertically */
+    nav .nav-bar {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    /* Stack main and sidebar vertically */
+    .main-area {
+      grid-template-columns: 1fr;  /* single column */
+      grid-template-rows: auto auto; /* stack main and sidebar */
+    }
+  
+    aside {
+      order: 2; /* put sidebar after main */
+      width: 100%;
+    }
+  
+    main {
+      order: 1;
+      width: 100%;
+    }
+  
+    footer {
+      width: 100%;
+    }
+  }
+  

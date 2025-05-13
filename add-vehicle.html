@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COMP1004 - Add Vehicle</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="container">
+    <header role="banner">
+      <h1>Add a Vehicle</h1>
+      <nav aria-label="Main navigation">
+        <ul class="nav-bar">
+          <li><h1><a href="index.html">People search</a></h1></li>
+          <li><h1><a href="vehicle-search.html">Vehicle search</a></h1></li>
+          <li><h1><a href="add-vehicle.html">Add a vehicle</a></h1></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="main-area">
+      <aside role="complementary">
+        <h2>Quick Links</h2>
+        <img src="add-a-vehicle.png" alt="Illustration showing how to add a vehicle" />
+      </aside>
+
+      <main role="main">
+        <form id="add-vehicle">
+          <fieldset>
+            <legend>Add Vehicle Details</legend>
+
+            <label for="rego">Registration (plate) number:</label>
+            <input type="text" id="rego" name="rego" required />
+
+            <label for="make">Manufacturer/Brand of car:</label>
+            <input type="text" id="make" name="make" required />
+
+            <label for="model">Model of car:</label>
+            <input type="text" id="model" name="model" required />
+
+            <label for="colour">Colour of car:</label>
+            <input type="text" id="colour" name="colour" required />
+
+            <label for="owner-id">Name of owner:</label>
+            <input type="text" id="owner-id" name="owner-id" required />
+
+            <button type="submit" id="submit">Submit</button>
+            <button type="button" id="check-owner" disabled>Check Owner</button>
+            <button type="button" id="new-owner" disabled>New Owner</button>
+          </fieldset>
+        </form>
+
+        <div id="owner-results" aria-live="polite"></div>
+        <div id="vehicle-message"></div>
+      </main>
+    </div>
+
+    <footer role="contentinfo">
+      <p>&copy; 2025 COMP1004 Coursework</p>
+    </footer>
+    
+  </div>
+  <script src="add-vehicle.js" type="module" ></script>
+</body>
+</html>

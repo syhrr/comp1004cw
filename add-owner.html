@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COMP1004 - Add Owner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head> 
+<body>
+  <div id="container">
+    <header>
+      <h1>Add an Owner</h1>
+      <nav>
+        <ul class="nav-bar">
+          <li><h1><a href="index.html">People search</a></h1></li>
+          <li><h1><a href="vehicle-search.html">Vehicle search</a></h1></li>
+          <li><h1><a href="add-vehicle.html">Add a vehicle</a></h1></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="main-area">
+      <aside>
+        <h3>Quick Links</h3>
+        <img src="add-an-owner.png" alt="Emoji" />
+      </aside>
+
+      <main>
+        <form id="add-owner">
+          <fieldset>
+            <legend>Enter Owner Details</legend>
+
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required />
+
+            <label for="address">Address of Owner:</label>
+            <input type="text" id="address" name="address" required />
+
+            <label for="dob">Owner Date of Birth:</label>
+            <input type="date" id="dob" name="dob" required />
+
+            <label for="license">License Number:</label>
+            <input type="text" id="license" name="license" required />
+
+            <label for="expire">License Expiry Date:</label>
+            <input type="date" id="expire" name="expire" required />
+
+            <div class="buttonWrapper">
+              <button type="submit" id="submit">Submit</button>
+            </div>
+          </fieldset>
+        </form>
+        <div id="owner-message"></div>
+      </main>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 COMP1004 Coursework</p>
+    </footer>
+  </div>
+
+  <script type="module" src="add-owner.js"></script>
+</body>
+</html>

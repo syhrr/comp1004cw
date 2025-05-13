@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>comp1004</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <!--The element(s) that CSS grid applies to must have the ID 'container'.-->
+  <div id="container">
+    <header>
+      <!-- The people search page must have a h1 heading with text 'People Search'
+The vehicle search page must have a h1 heading with text 'Vehicle Search'
+The add vehicle page must have a h1 heading with text 'Add a Vehicle '-->
+      <h1>People Search</h1>
+      <nav>
+        <!--The link to the people search page must have text 'People search'
+The link to the vehicle search page must have text 'Vehicle search'
+The link to the add vehicle page must have text 'Add a vehicle'
+The <ul> used for navigation link must be inside the <header>.-->
+        <ul class="nav-bar">
+          <li><a href="index.html">People search</a></li>
+          <li><a href="vehicle-search.html">Vehicle search</a></li>
+          <li><a href="add-vehicle.html">Add a vehicle</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="main-area"> 
+      <aside>
+        <h3>Quick Links</h3>
+        <img src="search-person.png" alt="Emoji" />
+      </aside>
+
+      <main>
+        <form id="people-search">
+          <fieldset>
+          
+ 
+            <label for="name">Search by driver name:</label>
+            <input type="text" id="name" />
+
+            <div class="OR">
+              <p><strong>OR</strong></p> 
+            </div>
+
+            <label for="license">Search by license number:</label>
+            <input type="text" id="license" />
+            <!--The button to start the search must have the label text 'Submit'.-->
+            <button id="search-person" type="button">Submit</button>
+          </fieldset>
+        </form>
+        <!--There must be an element with ID 'message' (outside the 'results' element) that:-->
+        <div id="message"></div>
+        <!--The HTML element showing the search results must have an ID 'results'.-->
+        <div id="results"></div>
+
+      </main>
+    </div>
+    
+    <footer>
+      <p>&copy; 2025 COMP1004 Coursework</p>
+    </footer>
+  </div>
+
+  <script type="module" src="person-search.js"></script>
+</body>
+</html>

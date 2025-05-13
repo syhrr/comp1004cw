@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>comp1004</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div id="container">
+    <header>
+      <h1>Vehicle Search</h1>
+      <nav>
+        <ul class="nav-bar">
+          <li><h1><a href="index.html">People search</a></h1></li>
+          <li><h1><a href="vehicle-search.html">Vehicle search</a></h1></li>
+          <li><h1><a href="add-vehicle.html">Add a vehicle</a></h1></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="main-area">
+      <aside>
+        <h3>Quick Links</h3>
+        <img src="vehicle-search.png" alt="Emoji" />
+      </aside>
+
+      <main>
+        <form id="vehicle-search">
+          <fieldset>
+       
+
+            <label for="license">Search by registration (plate) number:</label>
+            <input type="text" id="license" />
+
+            <button id="submit" type="button">Submit</button>
+          </fieldset>
+        </form>
+        
+        <div id ="message"></div>
+        <!-- Results container -->
+        <div id="results">
+
+        </div>
+      </main>
+    </div>
+    
+    <footer>
+      <p>&copy; 2025 COMP1004 Coursework</p>
+    </footer>
+  </div>
+
+  <!-- Only keep one script tag, and it should be placed before the end of body -->
+  <script type="module" src="vehicle-search.js"></script>
+</body>
+</html>

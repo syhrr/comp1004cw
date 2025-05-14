@@ -1,250 +1,220 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-const supabase = createClient(
-  'https://oxinpfpbpvsglksvpnug.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94aW5wZnBicHZzZ2xrc3ZwbnVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MTI1MTgsImV4cCI6MjA1OTA4ODUxOH0.MpFlhTkVXe8nqunU_87cZbf8MQdg8ogJqBbRbU0nIxI'
-)
-
-export default supabase
-
-
+import supabase from './supabase.js';
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Element references
   const submitBtn = document.getElementById("submit");
-  submitBtn.disabled = true; // Disable Add Owner button if person exists
-  submitBtn.style.opacity = "0.5";
-  submitBtn.style.pointerEvents = "none";
-  submitBtn.style.cursor = "not-allowed";
-
   const checkBtn = document.getElementById("check-owner");
   const newOwnerBtn = document.getElementById("new-owner");
-  newOwnerBtn.disabled = true; // Disable Add Owner button if person exists
-  newOwnerBtn.style.opacity = "0.5";
-  newOwnerBtn.style.pointerEvents = "none";
-  newOwnerBtn.style.cursor = "not-allowed";
-  
-
   const regoInput = document.getElementById("rego");
   const makeInput = document.getElementById("make");
-  const modelInput = document.getElementById("model")
+  const modelInput = document.getElementById("model");
   const colourInput = document.getElementById("colour");
   const ownerInput = document.getElementById("owner-id");
-
-  const resultsDiv = document.getElementById("owner-results"); // make sure you have a div#results in HTML
-
-  // Initial state
-  updateCheckButtonState(checkBtn);
-
-  // Real-time updates
-  ownerInput.addEventListener("input", () => updateCheckButtonState(checkBtn));
-
-
-
-  checkBtn.onclick = async function () {
-    const driverName = ownerInput.value.trim();
-    const exists = await checkForOwner(driverName);
+  const resultsDiv = document.getElementById("owner-results");
+  const messageDiv = document.getElementById("message") || document.createElement("div");
   
-    if (exists) {
-      await displayOwners(driverName);
-      newOwnerBtn.disabled = true; // Disable Add Owner button if person exists
-      newOwnerBtn.style.opacity = "0.5";
-      newOwnerBtn.style.pointerEvents = "none";
-      newOwnerBtn.style.cursor = "not-allowed";
-    } else {
-      newOwnerBtn.disabled = false; // Enable Add Owner button if no match
-      newOwnerBtn.style.opacity = "1";
-      newOwnerBtn.style.pointerEvents = "auto";
-      newOwnerBtn.style.cursor = "pointer";
-      resultsDiv.innerHTML = `<p class="info-text"><h3>Owner not found. Please add them</h3></p>`;
-    }
-  };
-
-
-  submitBtn.onclick = async function() {
-  if (!areAllInputsFilled()) {
-    alert("Please fill in all fields before submitting.");
-    return;
+  if (!messageDiv.id) {
+    messageDiv.id = "message";
+    messageDiv.style.margin = "20px 0";
+    document.querySelector('form').appendChild(messageDiv);
   }
-
-  // Get selected owner card if one exists
-  const selectedCard = document.querySelector('.card.selected');
-  if (!selectedCard) {
-    alert("Please select an owner from the list or add a new owner.");
-    return;
-  }
-
-  const ownerId = selectedCard.dataset.ownerId;
-  const rego = regoInput.value.trim();
-  const make = makeInput.value.trim();  
-  const model = modelInput.value.trim(); 
-  const colour = colourInput.value.trim();
-
-  try {
-    const { data, error } = await supabase
-      .from('Vehicles')
-      .insert({ 
-        VehicleID: rego, 
-        Make: make,
-        Model: model,
-        Colour: colour,
-        OwnerID: ownerId  // Use the actual selected owner ID
-      });
-
-    if (error) {
-      console.error('Error adding vehicle:', error);
-      alert(`Error adding vehicle: ${error.message}`);
-    } else {
-      console.log("Successfully added vehicle with rego:", rego);
-      alert("Vehicle added successfully!");
-      // Clear form or redirect
-      window.location.href = "success.html"; // or wherever you want to redirect
-    }
-  } catch (err) {
-    console.error('Network error:', err);
-    alert("Failed to connect to the server. Please check your internet connection.");
-  }
-};
   
-
-
-
-  function areAllInputsFilled() {
+  // Initial button states
+  disableButton(submitBtn);
+  disableButton(newOwnerBtn);
+  updateCheckButtonState();
+  
+  // Event listeners
+  ownerInput.addEventListener("input", updateCheckButtonState);
+  checkBtn.addEventListener("click", checkOwner);
+  newOwnerBtn.addEventListener("click", () => window.location.href = "add-owner.html");
+  submitBtn.addEventListener("click", handleSubmit);
+  
+  // Utility functions
+  function disableButton(button) {
+    button.disabled = true;
+    button.style.opacity = "0.5";
+    button.style.pointerEvents = "none";
+    button.style.cursor = "not-allowed";
+  }
+  
+  function enableButton(button) {
+    button.disabled = false;
+    button.style.opacity = "1";
+    button.style.pointerEvents = "auto";
+    button.style.cursor = "pointer";
+  }
+  
+  function updateCheckButtonState() {
+    const isEmpty = !ownerInput.value.trim();
+    if (isEmpty) {
+      disableButton(checkBtn);
+    } else {
+      enableButton(checkBtn);
+    }
+  }
+  
+  function showMessage(text, isError = false) {
+    messageDiv.textContent = text;
+    messageDiv.style.color = isError ? "red" : "green";
+    messageDiv.style.padding = "10px";
+    messageDiv.style.border = `1px solid ${isError ? "red" : "green"}`;
+    messageDiv.style.borderRadius = "4px";
+  }
+  
+  function clearMessage() {
+    messageDiv.textContent = "";
+    messageDiv.style.padding = "0";
+    messageDiv.style.border = "none";
+  }
+  
+  function areAllFieldsFilled() {
     return (
       regoInput.value.trim() !== "" &&
       makeInput.value.trim() !== "" &&
+      modelInput.value.trim() !== "" &&
       colourInput.value.trim() !== "" &&
       ownerInput.value.trim() !== ""
     );
-
-
   }
   
-
-
-
-  newOwnerBtn.onclick = async function()
-  {
-    window.location.href = "add-owner.html";
-  }
-
-  function updateCheckButtonState(button) {
-    const isEmpty = !ownerInput.value.trim();
-    button.disabled = isEmpty;
-    button.style.opacity = isEmpty ? "0.5" : "1";
-    button.style.pointerEvents = isEmpty ? "none" : "auto";
-    button.style.cursor = isEmpty ? "not-allowed" : "pointer";
-  }
-  
-
-  async function checkForOwner(driverName) {
+  // Main functionality
+  async function checkOwner() {
+    const driverName = ownerInput.value.trim();
+    clearMessage();
+    
     try {
       const { data, error } = await supabase
         .from('People')
         .select('*')
         .ilike('Name', `%${driverName}%`);
-
-      if (error) {
-        console.error('Search error:', error);
-        return false;
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        displayOwners(data);
+        disableButton(newOwnerBtn);
+      } else {
+        resultsDiv.innerHTML = `<p class="info-text"><h3>Owner not found. Please add them</h3></p>`;
+        enableButton(newOwnerBtn);
       }
-
-      return data && data.length > 0;
     } catch (error) {
-      console.error('Search error:', error);
-      return false;
+      console.error('Error checking owner:', error);
+      showMessage(`Error: ${error.message || 'Failed to check owner'}`, true);
     }
   }
-
-
-
-  async function displayOwners(driverName) {
-    try {
-      const { data, error } = await supabase
-        .from('People')
-        .select('*')
-        .ilike('Name', `%${driverName}%`);
   
-      if (error) {
-        console.error('Search error:', error);
-        return;
-      }
-  
-      resultsDiv.innerHTML = ""; // Clear previous results
-  
-      let heading = `<h3>Found ${data.length} matching owner(s):</h3>`;
-  
-      if (data.length > 1) {
-        heading += `<p class="info-text">Multiple owners found. Please select the correct owner for the vehicle.</p>`;
-      } 
-
-      resultsDiv.innerHTML = `
-        ${heading}
-        <div class="results-grid">
-          ${data.map(owner => `
-            <div class="card" data-owner-id="${owner.PersonID}">
-              <h4>${owner.Name || 'Unknown'}</h4>
-              ${owner.LicenseNumber ? `<p><strong>License number:</strong> ${owner.LicenseNumber}</p>` : ''}
-              ${owner.Address ? `<p><strong>Address:</strong> ${owner.Address}</p>` : ''}
-              ${owner.DOB ? `<p><strong>Date of Birth:</strong> ${owner.DOB}</p>` : ''}
-              ${owner.ExpiryDate ? `<p><strong>Expiry Date:</strong> ${owner.ExpiryDate}</p>` : ''}
-            </div>
-          `).join('')}
-        </div>
-      `;
-  
-      // Attach click events
-      document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', () => {
-          selectOwner(card);  // Pass the entire card to selectOwner
-        });
-      });
-  
-    } catch (error) {
-      console.error("Search error:", error);
+  function displayOwners(owners) {
+    resultsDiv.innerHTML = "";
+    
+    let heading = `<h3>Found ${owners.length} matching owner(s):</h3>`;
+    if (owners.length > 1) {
+      heading += `<p class="info-text">Multiple owners found. Please select the correct owner.</p>`;
     }
+    
+    const ownerCards = owners.map(owner => `
+      <div class="card" data-owner-id="${owner.PersonID}">
+        <h4>${owner.Name || 'Unknown'}</h4>
+        ${owner.LicenseNumber ? `<p><strong>License:</strong> ${owner.LicenseNumber}</p>` : ''}
+        ${owner.Address ? `<p><strong>Address:</strong> ${owner.Address}</p>` : ''}
+        ${owner.DOB ? `<p><strong>DOB:</strong> ${owner.DOB}</p>` : ''}
+      </div>
+    `).join('');
+    
+    resultsDiv.innerHTML = `
+      ${heading}
+      <div class="results-grid">${ownerCards}</div>
+    `;
+    
+    // Add click handlers
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => selectOwner(card));
+    });
   }
   
   function selectOwner(card) {
-    // Remove 'selected' class from all cards
-    const allCards = document.querySelectorAll('.card');
-    allCards.forEach(card => card.classList.remove('selected'));
-  
-    // Highlight the selected card
+    // Update UI
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
-  
-    // Set the value of the ownerInput to the name of the selected owner
-    const ownerName = card.querySelector('h4').textContent;
-    const ownerInput = document.getElementById('owner-id');
-    ownerInput.value = ownerName;  // Set the value of the input to the selected owner's name
-
-    // enable submit button if an owner has been selected:
-
-    submitBtn.disabled = false; // Enable Add Owner button if no match
-    submitBtn.style.opacity = "1";
-    submitBtn.style.pointerEvents = "auto";
-    submitBtn.style.cursor = "pointer";
-  }
-  
-
-
-
-
-
-  async function addVehicle() {
     
+    // Set owner name in input
+    const ownerName = card.querySelector('h4').textContent;
+    ownerInput.value = ownerName;
+    
+    // Enable submit button
+    enableButton(submitBtn);
   }
-
-
-
-
   
-  
-  
-
-
-  
+  async function handleSubmit(e) {
+    e.preventDefault();
+    
+    if (!areAllFieldsFilled()) {
+      showMessage("Please fill in all fields", true);
+      return;
+    }
+    
+    const selectedCard = document.querySelector('.card.selected');
+    if (!selectedCard) {
+      showMessage("Please select an owner from the list", true);
+      return;
+    }
+    
+    const ownerId = selectedCard.dataset.ownerId;
+    const rego = regoInput.value.trim();
+    const make = makeInput.value.trim();
+    const model = modelInput.value.trim();
+    const colour = colourInput.value.trim();
+    
+    try {
+      // Check for existing vehicle
+      const { data: existingVehicle } = await supabase
+        .from('Vehicles')
+        .select('*')
+        .eq('VehicleID', rego)
+        .maybeSingle();
+      
+      if (existingVehicle) {
+        showMessage(`Vehicle with registration ${rego} already exists`, true);
+        return;
+      }
+      
+      // Insert new vehicle
+      const { data, error } = await supabase
+        .from('Vehicles')
+        .insert({
+          VehicleID: rego,
+          Make: make,
+          Model: model,
+          Colour: colour,
+          OwnerID: ownerId
+        })
+        .select();
+      
+      if (error) throw error;
+      
+      // Success
+      showMessage(`Vehicle ${rego} added successfully!`);
+      
+      // Clear the form
+      regoInput.value = '';
+      makeInput.value = '';
+      modelInput.value = '';
+      colourInput.value = '';
+      ownerInput.value = '';
+      resultsDiv.innerHTML = '';
+      disableButton(submitBtn);
+      updateCheckButtonState();
+      
+      // Optional: redirect after short delay
+      /*
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 2000);
+      */
+      
+    } catch (error) {
+      console.error('Error:', error);
+      showMessage(`Error: ${error.message || 'Failed to add vehicle'}`, true);
+    }
+  }
 });
-
-
-
-

@@ -4,66 +4,72 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitVehicleBtn = document.getElementById("submit");
   const resultsDiv = document.getElementById("results");
   const messageDiv = document.getElementById("message");
-  const licenseInput = document.getElementById("license")
+  const licenseInput = document.getElementById("license");
 
+  submitVehicleBtn.onclick = async function () {
+    clearMessage(messageDiv);
+    resultsDiv.innerHTML = '';
 
-  submitVehicleBtn.onclick = async function() {
+    const regNum = licenseInput.value.trim().toUpperCase();
+
+    if (!regNum) {
+      showMessage(messageDiv, "Please enter a license number.", true);
+      return;
+    }
+
     try {
-      const regNum = licenseInput.value.trim().toUpperCase();
-
-      if (!regNum) {
-        messageDiv.innerHTML = `<h3>Error</h3>`
-        return;
-      }
-
-      // First try exact match with driver information
       let { data: vehicles, error } = await supabase
         .from('Vehicles')
-        .select(`
-          *,
-          People (*)
-        `)
+        .select(`*, People (*)`)
         .or(`VehicleID.eq.${regNum},VehicleID.ilike.%${regNum}%`);
 
       if (error) throw error;
 
-
-
-      // Display results with driver info
       displayVehicleResults(vehicles);
-      
     } catch (error) {
       console.error('Search error:', error);
-    
+      showMessage(messageDiv, "An error occurred while searching.", true);
     }
   };
 
   function displayVehicleResults(vehicles) {
-    if (vehicles.length == 0){
-      messageDiv.innerHTML = `<h3>No vehicles with that license number are in the database!</h3>`
-    } else {
-       messageDiv.innerHTML = `<h3>Search successful</h3>`
-      resultsDiv.innerHTML = `
-        <h3>Found ${vehicles.length} matching record(s):</h3>
-        <div class="results-grid">
-          ${vehicles.map(vehicle => `
-            <div class="card">
-              <h4>${vehicle.VehicleID || 'Unknown'}</h4>
-              ${vehicle.Make ? `<p><strong>Make:</strong> ${vehicle.Make}</p>` : ''}
-              ${vehicle.Colour ? `<p><strong>Colour:</strong> ${vehicle.Colour}</p>` : ''}
-
-              ${
-                vehicle.OwnerID !== null
-                  ? `
-                    ${vehicle.People?.Name ? `<p><strong>Driver name:</strong> ${vehicle.People.Name}</p>` : ''}
-                    ${vehicle.People?.LicenseNumber ? `<p><strong>Licence number:</strong> ${vehicle.People.LicenseNumber}</p>` : ''}
-                  `
-                  : `<p><strong class="no-driver">No driver assigned!</strong></p>`
-              }
-            </div>
-          `).join('')}
-        </div>
-      `;
+    if (!vehicles || vehicles.length === 0) {
+      showMessage(messageDiv, "No vehicles with that license number are in the database.", true);
+      return;
     }
+
+    showMessage(messageDiv, "Search successful!");
+
+    resultsDiv.innerHTML = `
+      <h3>Found ${vehicles.length} matching record(s):</h3>
+      <div class="results-grid">
+        ${vehicles.map(vehicle => `
+          <div class="card">
+            <h4>${vehicle.VehicleID || 'Unknown'}</h4>
+            ${vehicle.Make ? `<p><strong>Make:</strong> ${vehicle.Make}</p>` : ''}
+            ${vehicle.Colour ? `<p><strong>Colour:</strong> ${vehicle.Colour}</p>` : ''}
+
+            ${
+              vehicle.OwnerID !== null
+                ? `
+                  ${vehicle.People?.Name ? `<p><strong>Driver name:</strong> ${vehicle.People.Name}</p>` : ''}
+                  ${vehicle.People?.LicenseNumber ? `<p><strong>Licence number:</strong> ${vehicle.People.LicenseNumber}</p>` : ''}
+                `
+                : `<p><strong class="no-driver">No driver assigned!</strong></p>`
+            }
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function showMessage(target, text, isError = false) {
+    target.textContent = text;
+    target.className = `message ${isError ? 'error' : 'success'}`;
+  }
+
+  function clearMessage(target) {
+    target.textContent = '';
+    target.className = 'message';
   }
 });

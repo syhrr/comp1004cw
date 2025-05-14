@@ -9,21 +9,19 @@ const messageDiv = document.getElementById("message");
 const nameInput = document.getElementById("name");
 const licenseInput = document.getElementById("license");
 
-submitPersonBtn.onclick = async function() 
-{
-  if (!validatePeopleSearchForm()){
-    messageDiv.innerHTML = `<h3>Error</h3>`
-    resultsDiv.innerHTML = ``
-  } else {
-    try {
+submitPersonBtn.onclick = async function () {
+  clearMessage(messageDiv);
+  resultsDiv.innerHTML = '';
+
+  if (!validatePeopleSearchForm()) return;
+
+  try {
     const driverName = nameInput.value.trim();
     const licensePlate = licenseInput.value.trim();
 
-
-    // select all values from the People table
     let query = supabase.from('People').select('*');
-    if (driverName && licensePlate) 
-    {
+
+    if (driverName && licensePlate) {
       query = query.ilike('Name', `%${driverName}%`).ilike('LicenseNumber', `%${licensePlate}%`);
     } else if (driverName) {
       query = query.ilike('Name', `%${driverName}%`);
@@ -34,52 +32,61 @@ submitPersonBtn.onclick = async function()
     const { data, error } = await query;
 
     if (error) throw error;
-      displayPeopleResults(data);
-    } catch (error) {
-      console.error('Search error:', error);
-      messageDiv.innerHTML = `<h3>Error:</h3>`
+
+    displayPeopleResults(data);
+  } catch (error) {
+    console.error('Search error:', error);
+    showMessage(messageDiv, "An error occurred while searching.", true);
   }
-  }
-}
+};
 
 function validatePeopleSearchForm() {
   const name = nameInput.value.trim();
   const license = licenseInput.value.trim();
 
-  if (name === "" && license === "") {
-    console.error("Please fill in either the name or license field.");
+  if (!name && !license) {
+    showMessage(messageDiv, "Please enter a name or license number to search.", true);
     return false;
   }
 
-  if (name !== "" && license !== "") {
-    console.error("Please fill only one field — not both.");
+  if (name && license) {
+    showMessage(messageDiv, "Please enter either a name or license number, not both.", true);
     return false;
   }
 
-  console.log("Valid input. Proceeding with search.");
   return true;
 }
 
 function displayPeopleResults(people) {
-  if (people.length == 0)
-  {
-    messageDiv.innerHTML = `<h3>No result found</h3>`
-  }else{
-    messageDiv.innerHTML = `<h3>Search successful</h3>`
-    resultsDiv.innerHTML = `
+  if (people.length === 0) {
+    showMessage(messageDiv, "No results found.", true);
+    return;
+  }
+
+  showMessage(messageDiv, "Search successful!", false);
+
+  resultsDiv.innerHTML = `
     <h4>Found ${people.length} matching record(s):</h4>
     <div class="results-grid">
       ${people.map(person => `
         <div class="card">
-          <h4>${person.Name ||'Unknown'}</h4>
+          <h4>${person.Name || 'Unknown'}</h4>
           ${person.LicenseNumber ? `<p><strong>License number:</strong> ${person.LicenseNumber}</p>` : ''}
           ${person.Address ? `<p><strong>Address:</strong> ${person.Address}</p>` : ''}
           ${person.DOB ? `<p><strong>Date of Birth:</strong> ${person.DOB}</p>` : ''}
           ${person.ExpiryDate ? `<p><strong>Expiry Date:</strong> ${person.ExpiryDate}</p>` : ''}
         </div>
       `).join('')}
-    </div>`;
-  }
+    </div>
+  `;
+}
 
-  
+function showMessage(target, text, isError = false) {
+  target.textContent = text;
+  target.className = `message ${isError ? 'error' : 'success'}`;
+}
+
+function clearMessage(target) {
+  target.textContent = '';
+  target.className = 'message';
 }

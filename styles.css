@@ -248,3 +248,24 @@ footer {
     }
   }
   
+  /* messages */
+
+.message {
+  margin: 20px 0;
+  padding: 10px;
+  border-radius: 4px;
+  display: none;
+}
+
+.message.success {
+  color: green;
+  border: 1px solid green;
+  display: block;
+}
+
+.message.error {
+  color: red;
+  border: 1px solid red;
+  display: block;
+}
+

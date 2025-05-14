@@ -6,35 +6,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const dobInput = document.getElementById("dob");
   const licenseInput = document.getElementById("license");
   const expireInput = document.getElementById("expire");
-  const resultsDiv = document.getElementById("owner-message");
+  const messageDiv = document.getElementById("owner-message");
   const submitBtn = document.getElementById("submit");
-  
 
   const savedName = localStorage.getItem('newOwnerName');
- 
-  
   if (savedName) {
     nameInput.value = savedName;
     localStorage.removeItem('newOwnerName');
   }
-  
-
-  function areAllInputsFilled() {
-    return (
-      nameInput.value.trim() !== "" &&
-      addressInput.value.trim() !== "" &&
-      dobInput.value.trim() !== "" &&
-      licenseInput.value.trim() !== "" &&
-      expireInput.value.trim() !== ""
-    );
-  }
 
   submitBtn.addEventListener('click', async (event) => {
-    event.preventDefault(); // Prevents form from refreshing the page
+    event.preventDefault();
+    clearMessage(messageDiv);
 
     if (!areAllInputsFilled()) {
-      resultsDiv.innerHTML = '<h3>Error</h3>'
-
+      showMessage(messageDiv, "Please ensure all fields are filled!", true);
       return;
     }
 
@@ -42,60 +28,58 @@ document.addEventListener("DOMContentLoaded", () => {
     await addOwner();
   });
 
+  function areAllInputsFilled() {
+    return (
+      nameInput.value.trim() &&
+      addressInput.value.trim() &&
+      dobInput.value.trim() &&
+      licenseInput.value.trim() &&
+      expireInput.value.trim()
+    );
+  }
+
   async function addOwner() {
     const name = nameInput.value.trim();
     const address = addressInput.value.trim();
     const dob = dobInput.value.trim();
     const license = licenseInput.value.trim();
     const expire = expireInput.value.trim();
-  
-    // Check for missing fields
-    if (!name || !address || !dob || !license || !expire) {
-      resultsDiv.innerHTML = 'Error: All fields are required!';
-      return;
-    }
-  
-    // Check for existing owner with the same license number
-    let { data: existingOwners, error: checkError } = await supabase
+
+    // Check for duplicate license number
+    const { data: existingOwners, error: checkError } = await supabase
       .from('People')
       .select('PersonID')
       .eq('LicenseNumber', license);
 
-
     if (checkError) {
       console.error('Error checking license number:', checkError);
+      showMessage(messageDiv, "Error checking license number.", true);
       return;
     }
 
     if (existingOwners.length > 0) {
-      resultsDiv.innerHTML = '<h3>Someone with that license number already exists!</h3>'
+      showMessage(messageDiv, "Someone with that license number already exists!", true);
       return;
     }
 
-  
-    // Get next PersonID
-    let { data, error: idError } = await supabase
+    // Get next available PersonID
+    const { data, error: idError } = await supabase
       .from('People')
       .select('PersonID')
       .order('PersonID', { ascending: false })
       .limit(1);
-  
-    let nextID;
-  
+
     if (idError) {
       console.error('Error fetching highest PersonID:', idError);
-      resultsDiv.innerHTML = 'Error: Could not generate new ID.';
+      showMessage(messageDiv, "Could not generate new ID.", true);
       return;
-    } else if (data && data.length > 0) {
-      const highestPersonID = data[0].PersonID;
-      nextID = highestPersonID + 1;
-    } else {
-      nextID = 1;
     }
-  
-    // Insert new owner
+
+    const nextID = data?.length > 0 ? data[0].PersonID + 1 : 1;
+
+    // Insert new person
     const { error: insertError } = await supabase
-      .from('Vehicles')
+      .from('People')
       .insert([
         {
           PersonID: nextID,
@@ -103,26 +87,37 @@ document.addEventListener("DOMContentLoaded", () => {
           Address: address,
           DOB: dob,
           LicenseNumber: license,
-          ExpiryDate: expire
+          ExpiryDate: expire,
         }
       ]);
-  
+
     if (insertError) {
       console.error('Error adding owner:', insertError);
-      resultsDiv.innerHTML = 'Error: Failed to add owner.';
+      showMessage(messageDiv, "Failed to add new owner.", true);
     } else {
-      resultsDiv.innerHTML = 'Owner added successfully!';
-      // Clear the form fields
+      showMessage(messageDiv, "New owner added successfully!");
+
+      // Reset form
       nameInput.value = "";
       addressInput.value = "";
       dobInput.value = "";
       licenseInput.value = "";
-      expireInput.value = ""; 
+      expireInput.value = "";
 
-      //send back to add vehicle page
-      alert("The owner " + name + " has been added to the database.");
-      window.location.href = "add-vehicle.html";
+      // Redirect back to Add Vehicle page after delay
+      setTimeout(() => {
+        window.location.href = "add-vehicle.html";
+      }, 2000);
     }
   }
-  
+
+  function showMessage(target, text, isError = false) {
+    target.textContent = text;
+    target.className = `message ${isError ? "error" : "success"}`;
+  }
+
+  function clearMessage(target) {
+    target.textContent = "";
+    target.className = "message";
+  }
 });

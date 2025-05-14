@@ -14,15 +14,19 @@ body {
   
   
   /* Header and Nav bar*/
-
   header {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid black;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: #333333;
     color: white;
-    padding: 0.1em;
   }
+
+
+ 
 
   nav .nav-bar {
     display: flex;

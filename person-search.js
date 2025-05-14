@@ -60,6 +60,7 @@ function validatePeopleSearchForm() {
 function displayPeopleResults(people) {
   if (people.length === 0) {
     showMessage(messageDiv, "No results found.", true);
+    resultsDiv.innerHTML = ''; // Clear the results section if no people found
     return;
   }
 
@@ -80,6 +81,7 @@ function displayPeopleResults(people) {
     </div>
   `;
 }
+
 
 function showMessage(target, text, isError = false) {
   target.textContent = text;

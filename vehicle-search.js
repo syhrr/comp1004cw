@@ -7,30 +7,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const licenseInput = document.getElementById("license");
 
   submitVehicleBtn.onclick = async function () {
-    clearMessage(messageDiv);
-    resultsDiv.innerHTML = '';
+  clearMessage(messageDiv);
+  resultsDiv.innerHTML = '';
 
-    const regNum = licenseInput.value.trim().toUpperCase();
+  const regNum = licenseInput.value.trim().toUpperCase();
 
-    if (!regNum) {
-      showMessage(messageDiv, "Please enter a license number.", true);
-      return;
-    }
+  if (!regNum) {
+    showMessage(messageDiv, "Please enter a valid license number.", true);
+    return;
+  }
 
-    try {
-      let { data: vehicles, error } = await supabase
-        .from('Vehicles')
-        .select(`*, People (*)`)
-        .or(`VehicleID.eq.${regNum},VehicleID.ilike.%${regNum}%`);
+  try {
+    let { data: vehicles, error } = await supabase
+      .from('Vehicles')
+      .select(`*, People (*)`)
+      .or(`LicenseNumber.eq.${regNum},LicenseNumber.ilike.%${regNum}%`); // Fix column name
 
-      if (error) throw error;
+    if (error) throw error;
 
-      displayVehicleResults(vehicles);
-    } catch (error) {
-      console.error('Search error:', error);
-      showMessage(messageDiv, "An error occurred while searching.", true);
-    }
-  };
+    displayVehicleResults(vehicles);
+  } catch (error) {
+    console.error('Supabase query error:', error.message);
+    showMessage(messageDiv, "An error occurred while searching.", true);
+  }
+};
+
 
   function displayVehicleResults(vehicles) {
     if (!vehicles || vehicles.length === 0) {

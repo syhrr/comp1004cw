@@ -1,0 +1,30 @@
+{
+  "name": "comp1004cw",
+  "version": "1.0.0",
+  "description": "![Accessibility Score Screenshot](./images/accessibility.png)",
+  "main": "add-owner.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syhrr/comp1004cw.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syhrr/comp1004cw/issues"
+  },
+  "homepage": "https://github.com/syhrr/comp1004cw#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.18",
+    "playwright": "^1.52.0"
+  },
+  "dependencies": {
+    "playwright-core": "^1.52.0",
+    "undici-types": "^6.21.0"
+  }
+}

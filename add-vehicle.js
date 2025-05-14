@@ -1,10 +1,11 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-
 const supabase = createClient(
   'https://oxinpfpbpvsglksvpnug.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94aW5wZnBicHZzZ2xrc3ZwbnVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MTI1MTgsImV4cCI6MjA1OTA4ODUxOH0.MpFlhTkVXe8nqunU_87cZbf8MQdg8ogJqBbRbU0nIxI'
 )
+
+export default supabase
 
 
 
@@ -59,43 +60,50 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
 
-  submitBtn.onclick = async function() 
-  {
-    if (!areAllInputsFilled()) {
-      alert("Please fill in all fields before submitting.");
-      return; // stop the function if fields are missing
-    }
-  
-    // If all fields are filled, you can continue with submitting logic
-    const rego = regoInput.value.trim();
-    const make = makeInput.value.trim();  
-    const model = modelInput.value.trim(); 
-    const colour = colourInput.value.trim();
-    const ownerName = ownerInput.value.trim();
-
-    // Sanity check
-    console.log("Vehicle Details:");
-    console.log("Registration:", rego);
-    console.log("Make:", make);
-    console.log("Model:", model);
-    console.log("Colour:", colour); 
-    // Insert info into Vehicles database
-      const { error } = await supabase
-    .from('Vehicles')
-    .insert({ 
-      VehicleID: rego, 
-      Make: make,
-      Model: model,
-      Colour: colour,
-      OwnerID: 23
-    });
-
-  if (error) {
-    console.error('Error adding vehicle:', error);
-  } else {
-    console.log("Successfully added vehicle with rego:", rego);
+  submitBtn.onclick = async function() {
+  if (!areAllInputsFilled()) {
+    alert("Please fill in all fields before submitting.");
+    return;
   }
-  };
+
+  // Get selected owner card if one exists
+  const selectedCard = document.querySelector('.card.selected');
+  if (!selectedCard) {
+    alert("Please select an owner from the list or add a new owner.");
+    return;
+  }
+
+  const ownerId = selectedCard.dataset.ownerId;
+  const rego = regoInput.value.trim();
+  const make = makeInput.value.trim();  
+  const model = modelInput.value.trim(); 
+  const colour = colourInput.value.trim();
+
+  try {
+    const { data, error } = await supabase
+      .from('Vehicles')
+      .insert({ 
+        VehicleID: rego, 
+        Make: make,
+        Model: model,
+        Colour: colour,
+        OwnerID: ownerId  // Use the actual selected owner ID
+      });
+
+    if (error) {
+      console.error('Error adding vehicle:', error);
+      alert(`Error adding vehicle: ${error.message}`);
+    } else {
+      console.log("Successfully added vehicle with rego:", rego);
+      alert("Vehicle added successfully!");
+      // Clear form or redirect
+      window.location.href = "success.html"; // or wherever you want to redirect
+    }
+  } catch (err) {
+    console.error('Network error:', err);
+    alert("Failed to connect to the server. Please check your internet connection.");
+  }
+};
   
 
 

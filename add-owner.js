@@ -6,6 +6,8 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94aW5wZnBicHZzZ2xrc3ZwbnVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MTI1MTgsImV4cCI6MjA1OTA4ODUxOH0.MpFlhTkVXe8nqunU_87cZbf8MQdg8ogJqBbRbU0nIxI'
 )
 
+export default supabase
+
 document.addEventListener("DOMContentLoaded", () => {
   const nameInput = document.getElementById("name");
   const addressInput = document.getElementById("address");
@@ -39,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault(); // Prevents form from refreshing the page
 
     if (!areAllInputsFilled()) {
-      alert("Please fill in all fields before submitting.");
+      resultsDiv.innerHTML = '<h3>Error</h3>'
+
       return;
     }
 
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     // Insert new owner
     const { error: insertError } = await supabase
-      .from('People')
+      .from('Vehicles')
       .insert([
         {
           PersonID: nextID,

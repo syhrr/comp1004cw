@@ -9,25 +9,75 @@ document.addEventListener("DOMContentLoaded", () => {
   const makeInput = document.getElementById("make");
   const modelInput = document.getElementById("model");
   const colourInput = document.getElementById("colour");
-  const ownerInput = document.getElementById("owner-id");
+  const ownerInput = document.getElementById("owner");
   const resultsDiv = document.getElementById("owner-results");
-  const messageDiv = document.getElementById("vehicle-message");
+  const messageDiv = document.getElementById("message-vehicle");
+
+  // Track selected card globally
+  let selectedCard = null;
+
+  // Restore saved vehicle data from sessionStorage if any, then clear storage
+  // Restore saved vehicle data from sessionStorage if any, then clear storage
+if (sessionStorage.getItem('vehicleRego')) {
+  regoInput.value = sessionStorage.getItem('vehicleRego');
+  sessionStorage.removeItem('vehicleRego');
+}
+if (sessionStorage.getItem('vehicleMake')) {
+  makeInput.value = sessionStorage.getItem('vehicleMake');
+  sessionStorage.removeItem('vehicleMake');
+}
+if (sessionStorage.getItem('vehicleModel')) {
+  modelInput.value = sessionStorage.getItem('vehicleModel');
+  sessionStorage.removeItem('vehicleModel');
+}
+if (sessionStorage.getItem('vehicleColour')) {
+  colourInput.value = sessionStorage.getItem('vehicleColour');
+  sessionStorage.removeItem('vehicleColour');
+}
+if (sessionStorage.getItem('vehicleOwner')) {
+  ownerInput.value = sessionStorage.getItem('vehicleOwner');
+  sessionStorage.removeItem('vehicleOwner');
+
+  // Run owner check after restoring value
+  checkOwner();
+}
+
+// NEW: Enable submit button if all fields are restored
+if (
+  regoInput.value.trim() !== "" &&
+  makeInput.value.trim() !== "" &&
+  modelInput.value.trim() !== "" &&
+  colourInput.value.trim() !== "" &&
+  ownerInput.value.trim() !== ""
+) {
+  enableButton(submitBtn);
+}
+
 
   // Initial button states
-  disableButton(submitBtn);
   disableButton(newOwnerBtn);
-  updateCheckButtonState();
 
   // Event listeners
   ownerInput.addEventListener("input", updateCheckButtonState);
   checkBtn.addEventListener("click", checkOwner);
-  newOwnerBtn.addEventListener("click", () => window.location.href = "add-owner.html");
   submitBtn.addEventListener("click", handleSubmit);
+
+  newOwnerBtn.addEventListener("click", () => {
+    // Save vehicle form data in sessionStorage before navigating
+    sessionStorage.setItem('vehicleRego', regoInput.value);
+    sessionStorage.setItem('vehicleMake', makeInput.value);
+    sessionStorage.setItem('vehicleModel', modelInput.value);
+    sessionStorage.setItem('vehicleColour', colourInput.value);
+    sessionStorage.setItem('vehicleOwner', ownerInput.value);
+
+    // Navigate to add-owner.html
+    window.location.href = "add-owner.html";
+  });
 
   // Utility functions
   function disableButton(button) {
     button.disabled = true;
-    button.style.opacity = "0.5";
+    button.style.opacity = "0";
     button.style.pointerEvents = "none";
     button.style.cursor = "not-allowed";
   }
@@ -42,19 +92,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateCheckButtonState() {
     const isEmpty = !ownerInput.value.trim();
     if (isEmpty) {
+      disableButton(newOwnerBtn);
       disableButton(checkBtn);
+      disableButton(submitBtn);
     } else {
       enableButton(checkBtn);
     }
   }
 
   function showMessage(target, text, isError = false) {
-    target.textContent = text;
+    target.innerHTML = text;
     target.className = `message ${isError ? "error" : "success"}`;
   }
 
   function clearMessage(target) {
-    target.textContent = "";
+    target.innerHTML = "";
     target.className = "message";
   }
 
@@ -70,29 +122,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Main functionality
   async function checkOwner() {
-    const driverName = ownerInput.value.trim();
-    clearMessage(messageDiv);
-
-    try {
-      const { data, error } = await supabase
-        .from('People')
-        .select('*')
-        .ilike('Name', `%${driverName}%`);
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        displayOwners(data);
-        disableButton(newOwnerBtn);
-      } else {
-        resultsDiv.innerHTML = `<p class="info-text"><h3>Owner not found. Please add them</h3></p>`;
-        enableButton(newOwnerBtn);
-      }
-    } catch (error) {
-      console.error('Error checking owner:', error);
-      showMessage(messageDiv, `Error: ${error.message || 'Failed to check owner'}`, true);
-    }
+  if (ownerInput.value.trim() === "") {
+    messageDiv.innerHTML = "";
+    showMessage(resultsDiv, "Please enter a name to check!", true);
+    return;
   }
+
+  const driverName = ownerInput.value.trim();
+  clearMessage(messageDiv);
+
+  try {
+    const { data, error } = await supabase
+      .from('People')
+      .select('*')
+      .ilike('Name', `%${driverName}%`);
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      displayOwners(data);
+
+      // If there's exactly one owner and its name matches the input exactly,
+      // auto-select the owner card so no manual selection is needed.
+      if (data.length === 1 && data[0].Name.toLowerCase() === driverName.toLowerCase()) {
+        const onlyCard = resultsDiv.querySelector('.card');
+        if (onlyCard) {
+          selectOwner(onlyCard);
+        }
+      } else {
+        disableButton(newOwnerBtn);
+      }
+    } else {
+      showMessage(resultsDiv, `Owner not found. Please add them`, true);
+      enableButton(newOwnerBtn);
+    }
+  } catch (error) {
+    console.error('Error checking owner:', error);
+    showMessage(messageDiv, `Error: ${error.message || 'Failed to check owner'}`, true);
+  }
+}
+
 
   function displayOwners(owners) {
     resultsDiv.innerHTML = "";
@@ -101,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (owners.length > 1) {
       heading += `<p class="info-text">Multiple owners found. Please select the correct owner.</p>`;
     }
+    showMessage(messageDiv, heading, false);
 
     const ownerCards = owners.map(owner => `
       <div class="card" data-owner-id="${owner.PersonID}">
@@ -108,22 +178,25 @@ document.addEventListener("DOMContentLoaded", () => {
         ${owner.LicenseNumber ? `<p><strong>License:</strong> ${owner.LicenseNumber}</p>` : ''}
         ${owner.Address ? `<p><strong>Address:</strong> ${owner.Address}</p>` : ''}
         ${owner.DOB ? `<p><strong>DOB:</strong> ${owner.DOB}</p>` : ''}
+        <button type="button" class="select-owner-btn">Select owner</button>
       </div>
     `).join('');
 
-    resultsDiv.innerHTML = `
-      ${heading}
-      <div class="results-grid">${ownerCards}</div>
-    `;
+    resultsDiv.innerHTML = `<div class="results-grid">${ownerCards}</div>`;
 
-    document.querySelectorAll('.card').forEach(card => {
-      card.addEventListener('click', () => selectOwner(card));
+    document.querySelectorAll('.select-owner-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.card');
+        selectOwner(card);
+      });
     });
   }
 
   function selectOwner(card) {
     document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
+
+    selectedCard = card; 
 
     const ownerName = card.querySelector('h4').textContent;
     ownerInput.value = ownerName;
@@ -133,18 +206,12 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    clearMessage(messageDiv);
-
     if (!areAllFieldsFilled()) {
       showMessage(messageDiv, "Please fill in all fields", true);
       return;
     }
 
-    const selectedCard = document.querySelector('.card.selected');
-    if (!selectedCard) {
-      showMessage(messageDiv, "Please select an owner from the list", true);
-      return;
-    }
+
 
     const ownerId = selectedCard.dataset.ownerId;
     const rego = regoInput.value.trim();
@@ -177,16 +244,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (error) throw error;
 
-      showMessage(messageDiv, `Vehicle ${rego} added successfully!`);
+      showMessage(messageDiv, "Vehicle added successfully", false);
 
+      // Clear form
       regoInput.value = '';
       makeInput.value = '';
       modelInput.value = '';
       colourInput.value = '';
       ownerInput.value = '';
       resultsDiv.innerHTML = '';
-      disableButton(submitBtn);
+      selectedCard = null;
+
       updateCheckButtonState();
+
+      sessionStorage.clear();
     } catch (error) {
       console.error('Error:', error);
       showMessage(messageDiv, `Error: ${error.message || 'Failed to add vehicle'}`, true);

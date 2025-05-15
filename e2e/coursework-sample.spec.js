@@ -145,7 +145,7 @@ test('add a vehicle', async ({page}) => {
 
    // click the 'New owner' button
    await page.getByRole('button', { name: 'New owner' }).click();
-
+      
    // add a new person
    await page.locator('#name').fill('Kai')
    await page.locator('#address').fill('Edinburgh')

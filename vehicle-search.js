@@ -4,34 +4,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitVehicleBtn = document.getElementById("submit");
   const resultsDiv = document.getElementById("results");
   const messageDiv = document.getElementById("message");
-  const licenseInput = document.getElementById("license");
+  const licenseInput = document.getElementById("rego");
 
   submitVehicleBtn.onclick = async function () {
-  clearMessage(messageDiv);
-  resultsDiv.innerHTML = '';
+    clearMessage(messageDiv);
+    resultsDiv.innerHTML = '';
 
-  const regNum = licenseInput.value.trim().toUpperCase();
+    const regNum = licenseInput.value.trim().toUpperCase();
 
-  if (!regNum) {
-    showMessage(messageDiv, "Please enter a valid license number.", true);
-    return;
-  }
+    if (!regNum) {
+      showMessage(messageDiv, "Please enter a license number.", true);
+      return;
+    }
 
-  try {
-    let { data: vehicles, error } = await supabase
-      .from('Vehicles')
-      .select(`*, People (*)`)
-      .or(`LicenseNumber.eq.${regNum},LicenseNumber.ilike.%${regNum}%`); // Fix column name
+    try {
+      const { data: vehicles, error } = await supabase
+        .from('Vehicles')
+        .select(`*, People (*)`)
+        .ilike('VehicleID', `%${regNum}%`); 
 
-    if (error) throw error;
+      if (error) throw error;
 
-    displayVehicleResults(vehicles);
-  } catch (error) {
-    console.error('Supabase query error:', error.message);
-    showMessage(messageDiv, "An error occurred while searching.", true);
-  }
-};
-
+      displayVehicleResults(vehicles);
+    } catch (error) {
+      console.error('Search error:', error);
+      showMessage(messageDiv, "An error occurred while searching.", true);
+    }
+  };
 
   function displayVehicleResults(vehicles) {
     if (!vehicles || vehicles.length === 0) {
@@ -43,24 +42,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resultsDiv.innerHTML = `
       <h3>Found ${vehicles.length} matching record(s):</h3>
-      <div class="results-grid">
+  
         ${vehicles.map(vehicle => `
           <div class="card">
-            <h4>${vehicle.VehicleID || 'Unknown'}</h4>
+            <h4>${vehicle.VehicleID|| 'Unknown'}</h4>
             ${vehicle.Make ? `<p><strong>Make:</strong> ${vehicle.Make}</p>` : ''}
             ${vehicle.Colour ? `<p><strong>Colour:</strong> ${vehicle.Colour}</p>` : ''}
 
             ${
-              vehicle.OwnerID !== null
+              vehicle.OwnerID && vehicle.People
                 ? `
-                  ${vehicle.People?.Name ? `<p><strong>Driver name:</strong> ${vehicle.People.Name}</p>` : ''}
-                  ${vehicle.People?.LicenseNumber ? `<p><strong>Licence number:</strong> ${vehicle.People.LicenseNumber}</p>` : ''}
+                  ${vehicle.People.Name ? `<p><strong>Driver name:</strong> ${vehicle.People.Name}</p>` : ''}
+                  ${vehicle.People.LicenseNumber ? `<p><strong>Licence number:</strong> ${vehicle.People.LicenseNumber}</p>` : ''}
                 `
                 : `<p><strong class="no-driver">No driver assigned!</strong></p>`
             }
           </div>
         `).join('')}
-      </div>
+   
     `;
   }
 

@@ -42,16 +42,21 @@
             <label for="colour">Colour of car:</label>
             <input type="text" id="colour" name="colour" required />
 
-            <label for="owner-id">Name of owner:</label>
-            <input type="text" id="owner-id" name="owner-id" required />
 
-            <button type="submit" id="submit">Submit</button>
+            <label for="owner">Name of owner:</label>
+            <input type="text" id="owner" />
+
+
+
+
+            <button type="submit" id="submit">Add vehicle</button>
             <button type="button" id="check-owner" disabled>Check Owner</button>
             <button type="button" id="new-owner" disabled>New Owner</button>
           </fieldset>
         </form>
-        <div id="vehicle-message"></div>
-        <div id="owner-results" aria-live="polite"></div>
+
+        <div id="message-vehicle"></div>
+        <div id="owner-results"></div>
        
       </main>
     </div>

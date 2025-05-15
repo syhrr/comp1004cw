@@ -68,7 +68,7 @@ function displayPeopleResults(people) {
 
   resultsDiv.innerHTML = `
     <h4>Found ${people.length} matching record(s):</h4>
-    <div class="results-grid">
+   
       ${people.map(person => `
         <div class="card">
           <h4>${person.Name || 'Unknown'}</h4>
@@ -76,9 +76,9 @@ function displayPeopleResults(people) {
           ${person.Address ? `<p><strong>Address:</strong> ${person.Address}</p>` : ''}
           ${person.DOB ? `<p><strong>Date of Birth:</strong> ${person.DOB}</p>` : ''}
           ${person.ExpiryDate ? `<p><strong>Expiry Date:</strong> ${person.ExpiryDate}</p>` : ''}
-        </div>
+       
       `).join('')}
-    </div>
+   
   `;
 }
 

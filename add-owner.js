@@ -6,44 +6,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const dobInput = document.getElementById("dob");
   const licenseInput = document.getElementById("license");
   const expireInput = document.getElementById("expire");
-  const messageDiv = document.getElementById("owner-message");
-  const submitBtn = document.getElementById("submit");
+  const messageDiv = document.getElementById("message-owner");
+  const form = document.getElementById("add-owner");
 
-  const savedName = localStorage.getItem('newOwnerName');
-  if (savedName) {
-    nameInput.value = savedName;
-    localStorage.removeItem('newOwnerName');
-  }
-
-  submitBtn.addEventListener('click', async (event) => {
-    event.preventDefault();
-    clearMessage(messageDiv);
-
-    if (!areAllInputsFilled()) {
-      showMessage(messageDiv, "Please ensure all fields are filled!", true);
-      return;
-    }
-
-    console.log("All fields are filled. Proceeding to submit...");
+  form.onsubmit = async function(event) {
+    event.preventDefault();  // Prevent page reload on submit
     await addOwner();
-  });
-
-  function areAllInputsFilled() {
-    return (
-      nameInput.value.trim() &&
-      addressInput.value.trim() &&
-      dobInput.value.trim() &&
-      licenseInput.value.trim() &&
-      expireInput.value.trim()
-    );
-  }
+  };
 
   async function addOwner() {
+    clearMessage(messageDiv);
+
     const name = nameInput.value.trim();
     const address = addressInput.value.trim();
     const dob = dobInput.value.trim();
     const license = licenseInput.value.trim();
     const expire = expireInput.value.trim();
+
+    if (!name || !address || !dob || !license || !expire) {
+      showMessage(messageDiv, "Please fill in all fields.", true);
+      return;
+    }
 
     // Check for duplicate license number
     const { data: existingOwners, error: checkError } = await supabase
@@ -95,19 +78,14 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error('Error adding owner:', insertError);
       showMessage(messageDiv, "Failed to add new owner.", true);
     } else {
-      showMessage(messageDiv, "New owner added successfully!");
-
-      // Reset form
-      nameInput.value = "";
-      addressInput.value = "";
-      dobInput.value = "";
-      licenseInput.value = "";
-      expireInput.value = "";
-
-      // Redirect back to Add Vehicle page after delay
+      showMessage(messageDiv, "Owner added successfully",false);
       setTimeout(() => {
-        window.location.href = "add-vehicle.html";
-      }, 2000);
+      window.location.href = "add-vehicle.html";
+      }, 2000);  // 2000 milliseconds = 2 seconds
+
+     
+      
+
     }
   }
 

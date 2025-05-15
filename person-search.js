@@ -1,7 +1,7 @@
 // script.js
 import supabase from './supabase.js';
 
-// search-a-person page
+// search a person page
 const submitPersonBtn = document.getElementById("search-person");
 const resultsDiv = document.getElementById("results");
 const messageDiv = document.getElementById("message");
@@ -22,7 +22,9 @@ submitPersonBtn.onclick = async function () {
     let query = supabase.from('People').select('*');
 
     if (driverName && licensePlate) {
-      query = query.ilike('Name', `%${driverName}%`).ilike('LicenseNumber', `%${licensePlate}%`);
+      query = query
+        .ilike('Name', `%${driverName}%`)
+        .ilike('LicenseNumber', `%${licensePlate}%`);
     } else if (driverName) {
       query = query.ilike('Name', `%${driverName}%`);
     } else {
@@ -40,6 +42,7 @@ submitPersonBtn.onclick = async function () {
   }
 };
 
+// validate form input
 function validatePeopleSearchForm() {
   const name = nameInput.value.trim();
   const license = licenseInput.value.trim();
@@ -57,37 +60,42 @@ function validatePeopleSearchForm() {
   return true;
 }
 
+// display results
 function displayPeopleResults(people) {
   if (people.length === 0) {
     showMessage(messageDiv, "No results found.", true);
-    resultsDiv.innerHTML = ''; // Clear the results section if no people found
+    resultsDiv.innerHTML = '';
     return;
   }
 
   showMessage(messageDiv, "Search successful!", false);
 
-  resultsDiv.innerHTML = `
-    <h4>Found ${people.length} matching record(s):</h4>
-   
-      ${people.map(person => `
-        <div class="card">
-          <h4>${person.Name || 'Unknown'}</h4>
-          ${person.LicenseNumber ? `<p><strong>License number:</strong> ${person.LicenseNumber}</p>` : ''}
-          ${person.Address ? `<p><strong>Address:</strong> ${person.Address}</p>` : ''}
-          ${person.DOB ? `<p><strong>Date of Birth:</strong> ${person.DOB}</p>` : ''}
-          ${person.ExpiryDate ? `<p><strong>Expiry Date:</strong> ${person.ExpiryDate}</p>` : ''}
-       
-      `).join('')}
-   
-  `;
+resultsDiv.innerHTML = `
+  <h4>Found ${people.length} matching record(s):</h4>
+  <div class="results-grid">
+    ${people.map(person => `
+      <div class="card">
+        <h4>${person.Name || 'Unknown'}</h4>
+        ${person.LicenseNumber ? `<p><strong>License number:</strong> ${person.LicenseNumber}</p>` : ''}
+        ${person.Address ? `<p><strong>Address:</strong> ${person.Address}</p>` : ''}
+        ${person.DOB ? `<p><strong>Date of Birth:</strong> ${person.DOB}</p>` : ''}
+        ${person.ExpiryDate ? `<p><strong>Expiry Date:</strong> ${person.ExpiryDate}</p>` : ''}
+      </div>
+    `).join('')}
+  </div>
+`;
+
 }
 
 
+
+// show message to user
 function showMessage(target, text, isError = false) {
   target.textContent = text;
   target.className = `message ${isError ? 'error' : 'success'}`;
 }
 
+// clear message from screen
 function clearMessage(target) {
   target.textContent = '';
   target.className = 'message';

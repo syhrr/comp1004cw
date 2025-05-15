@@ -1,7 +1,7 @@
 import supabase from './supabase.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Element references
+  // element references
   const submitBtn = document.getElementById("submit");
   const checkBtn = document.getElementById("check-owner");
   const newOwnerBtn = document.getElementById("new-owner");
@@ -13,68 +13,65 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultsDiv = document.getElementById("owner-results");
   const messageDiv = document.getElementById("message-vehicle");
 
-  // Track selected card globally
   let selectedCard = null;
 
-  // Restore saved vehicle data from sessionStorage if any, then clear storage
-  // Restore saved vehicle data from sessionStorage if any, then clear storage
-if (sessionStorage.getItem('vehicleRego')) {
-  regoInput.value = sessionStorage.getItem('vehicleRego');
-  sessionStorage.removeItem('vehicleRego');
-}
-if (sessionStorage.getItem('vehicleMake')) {
-  makeInput.value = sessionStorage.getItem('vehicleMake');
-  sessionStorage.removeItem('vehicleMake');
-}
-if (sessionStorage.getItem('vehicleModel')) {
-  modelInput.value = sessionStorage.getItem('vehicleModel');
-  sessionStorage.removeItem('vehicleModel');
-}
-if (sessionStorage.getItem('vehicleColour')) {
-  colourInput.value = sessionStorage.getItem('vehicleColour');
-  sessionStorage.removeItem('vehicleColour');
-}
-if (sessionStorage.getItem('vehicleOwner')) {
-  ownerInput.value = sessionStorage.getItem('vehicleOwner');
-  sessionStorage.removeItem('vehicleOwner');
+  // restore saved vehicle data from sessionstorage if any then clear storage
+  if (sessionStorage.getItem('vehicleRego')) {
+    regoInput.value = sessionStorage.getItem('vehicleRego');
+    sessionStorage.removeItem('vehicleRego');
+  }
+  if (sessionStorage.getItem('vehicleMake')) {
+    makeInput.value = sessionStorage.getItem('vehicleMake');
+    sessionStorage.removeItem('vehicleMake');
+  }
+  if (sessionStorage.getItem('vehicleModel')) {
+    modelInput.value = sessionStorage.getItem('vehicleModel');
+    sessionStorage.removeItem('vehicleModel');
+  }
+  if (sessionStorage.getItem('vehicleColour')) {
+    colourInput.value = sessionStorage.getItem('vehicleColour');
+    sessionStorage.removeItem('vehicleColour');
+  }
+  if (sessionStorage.getItem('vehicleOwner')) {
+    ownerInput.value = sessionStorage.getItem('vehicleOwner');
+    sessionStorage.removeItem('vehicleOwner');
 
-  // Run owner check after restoring value
-  checkOwner();
-}
+    // run owner check after restoring value
+    checkOwner();
+  }
 
-// NEW: Enable submit button if all fields are restored
-if (
-  regoInput.value.trim() !== "" &&
-  makeInput.value.trim() !== "" &&
-  modelInput.value.trim() !== "" &&
-  colourInput.value.trim() !== "" &&
-  ownerInput.value.trim() !== ""
-) {
-  enableButton(submitBtn);
-}
+  // enable submit button if all fields are restored
+  if (
+    regoInput.value.trim() !== "" &&
+    makeInput.value.trim() !== "" &&
+    modelInput.value.trim() !== "" &&
+    colourInput.value.trim() !== "" &&
+    ownerInput.value.trim() !== ""
+  ) {
+    enableButton(submitBtn);
+  }
 
-
-  // Initial button states
+  // initial button states
   disableButton(newOwnerBtn);
 
-  // Event listeners
+  // event listeners
   ownerInput.addEventListener("input", updateCheckButtonState);
   checkBtn.addEventListener("click", checkOwner);
   submitBtn.addEventListener("click", handleSubmit);
 
   newOwnerBtn.addEventListener("click", () => {
-    // Save vehicle form data in sessionStorage before navigating
+    // save vehicle form data in sessionstorage before navigating
     sessionStorage.setItem('vehicleRego', regoInput.value);
     sessionStorage.setItem('vehicleMake', makeInput.value);
     sessionStorage.setItem('vehicleModel', modelInput.value);
     sessionStorage.setItem('vehicleColour', colourInput.value);
     sessionStorage.setItem('vehicleOwner', ownerInput.value);
 
-    // Navigate to add-owner.html
+    // navigate to addownerhtml
     window.location.href = "add-owner.html";
   });
 
-  // Utility functions
+  // utility functions
   function disableButton(button) {
     button.disabled = true;
     button.style.opacity = "0";
@@ -120,48 +117,73 @@ if (
     );
   }
 
-  // Main functionality
-  async function checkOwner() {
-  if (ownerInput.value.trim() === "") {
-    messageDiv.innerHTML = "";
-    showMessage(resultsDiv, "Please enter a name to check!", true);
-    return;
-  }
+  function validateNameAndColour() {
+    const name = ownerInput.value.trim();
+    const colour = colourInput.value.trim();
 
-  const driverName = ownerInput.value.trim();
-  clearMessage(messageDiv);
-
-  try {
-    const { data, error } = await supabase
-      .from('People')
-      .select('*')
-      .ilike('Name', `%${driverName}%`);
-
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      displayOwners(data);
-
-      // If there's exactly one owner and its name matches the input exactly,
-      // auto-select the owner card so no manual selection is needed.
-      if (data.length === 1 && data[0].Name.toLowerCase() === driverName.toLowerCase()) {
-        const onlyCard = resultsDiv.querySelector('.card');
-        if (onlyCard) {
-          selectOwner(onlyCard);
-        }
-      } else {
-        disableButton(newOwnerBtn);
-      }
-    } else {
-      showMessage(resultsDiv, `Owner not found. Please add them`, true);
-      enableButton(newOwnerBtn);
+    
+    if (name.length < 3) {
+      showMessage(messageDiv, "Name must be at least 3 characters long", true);
+      return false;
     }
-  } catch (error) {
-    console.error('Error checking owner:', error);
-    showMessage(messageDiv, `Error: ${error.message || 'Failed to check owner'}`, true);
-  }
+
+
+    if (/\d/.test(colour)) {
+      showMessage(messageDiv, "Colour cannot contain numbers", true);
+      return false;
+    }
+
+    clearMessage(messageDiv);
+    return true;
 }
 
+
+
+  // main functionality
+  async function checkOwner() {
+    if (ownerInput.value.trim() === "") {
+      messageDiv.innerHTML = "";
+      showMessage(resultsDiv, "Please enter a name to check!", true);
+      return;
+    }
+
+    if (!validateNameAndColour){
+      return;
+    }
+
+    const driverName = ownerInput.value.trim();
+    clearMessage(messageDiv);
+
+    try {
+      const { data, error } = await supabase
+        .from('People')
+        .select('*')
+        .ilike('Name', `%${driverName}%`);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        displayOwners(data);
+
+        // if there's exactly one owner and its name matches the input exactly
+        // auto select the owner card so no manual selection is needed
+        if (data.length === 1 && data[0].Name.toLowerCase() === driverName.toLowerCase()) {
+          const onlyCard = resultsDiv.querySelector('.card');
+          if (onlyCard) {
+            selectOwner(onlyCard);
+          }
+        } else {
+          disableButton(newOwnerBtn);
+        }
+      } else {
+        showMessage(resultsDiv, `Owner not found. Please add them`, true);
+        enableButton(newOwnerBtn);
+      }
+    } catch (error) {
+      console.error('Error checking owner:', error);
+      showMessage(messageDiv, `Error: ${error.message || 'Failed to check owner'}`, true);
+    }
+  }
 
   function displayOwners(owners) {
     resultsDiv.innerHTML = "";
@@ -196,7 +218,7 @@ if (
     document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
 
-    selectedCard = card; 
+    selectedCard = card;
 
     const ownerName = card.querySelector('h4').textContent;
     ownerInput.value = ownerName;
@@ -210,8 +232,6 @@ if (
       showMessage(messageDiv, "Please fill in all fields", true);
       return;
     }
-
-
 
     const ownerId = selectedCard.dataset.ownerId;
     const rego = regoInput.value.trim();
@@ -246,7 +266,7 @@ if (
 
       showMessage(messageDiv, "Vehicle added successfully", false);
 
-      // Clear form
+      // clear form
       regoInput.value = '';
       makeInput.value = '';
       modelInput.value = '';
